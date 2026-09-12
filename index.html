@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LuminX — Новейшие Разработки</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #0d0f12;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px 15px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+      margin-top: 10px;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 1.05rem;
+      color: #a0a5b5;
+    }
+
+    .slider-container {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .slide {
+      display: none;
+      background: #161920;
+      border: 1px solid #282c37;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-badge {
+      display: inline-block;
+      background: rgba(168, 85, 247, 0.15);
+      color: #a855f7;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+    }
+
+    .gallery-wrapper {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      margin-bottom: 15px;
+      border-radius: 14px;
+      overflow: hidden;
+      background-color: #0b0c10;
+    }
+
+    .gallery-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+
+    .gallery-img.active {
+      display: block;
+    }
+
+    .gallery-nav {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+      padding: 0 10px;
+    }
+
+    .g-btn {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slide h3 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .slide p {
+      font-size: 0.95rem;
+      color: #b0b5c0;
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 12px 0;
+      background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+      color: #ffffff;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+
+    .btn:active {
+      opacity: 0.8;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .nav-btn {
+      background: #1c202b;
+      border: 1px solid #2c3242;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background-color: #2c3242;
+      border-radius: 50%;
+    }
+
+    .dot.active {
+      background-color: #a855f7;
+      width: 20px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .info-card {
+      width: 100%;
+      max-width: 480px;
+      background: #13151c;
+      border: 1px solid #282c37;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    .info-card h4 {
+      font-size: 1.1rem;
+      color: #a855f7;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #1c202b;
+      border: 1px solid #2c3242;
+      color: #ffffff;
+      padding: 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .copy-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #1c202b;
+      border: 1px solid #2c3242;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: #a0a5b5;
+    }
+
+    .copy-row span {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid #a855f7;
+      color: #a855f7;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .req-item {
+      font-size: 0.9rem;
+      color: #a0a5b5;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .req-item span {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      background: #a855f7;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    footer {
+      margin-top: 30px;
+      font-size: 0.8rem;
+      color: #555c6e;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>LuminX</h1>
+    <p>Самые свежие выходы наших разработок</p>
+  </header>
+
+  <div class="slider-container">
+    
+    <div class="slide active">
+      <span class="slide-badge">Flagship Concept</span>
+      
+      <div class="gallery-wrapper" id="gal-1">
+        <img class="gallery-img active" src="35171.webp" alt="LuminX I Design">
+        <img class="gallery-img" src="35176.webp" alt="LuminX I Cameras">
+        <img class="gallery-img" src="35174.webp" alt="LuminX I Performance">
+        <img class="gallery-img" src="35172.webp" alt="LuminX I Battery">
+        <img class="gallery-img" src="35177.webp" alt="LuminX I Audio">
+        
+        <div class="gallery-nav">
+          <button class="g-btn" onclick="switchGallery('gal-1', -1)">‹</button>
+          <button class="g-btn" onclick="switchGallery('gal-1', 1)">›</button>
+        </div>
+      </div>
+
+      <h3>LuminX I</h3>
+      <p>6.59" AMOLED 120 Гц, MediaTek Dimensity 8300 Ultra, 50 МП двойная камера Sony LYT-600 и батарея 6010 мАч.</p>
+      <a href="https://t.me/LuminXcompany" target="_blank" class="btn">Подробнее в канале</a>
+    </div>
+
+    <div class="slide">
+      <span class="slide-badge">Pro Flagship Concept</span>
+      
+      <div class="gallery-wrapper" id="gal-2">
+        <img class="gallery-img active" src="35186.jpg" alt="LuminX I Pro Design">
+        <img class="gallery-img" src="35187.jpg" alt="LuminX I Pro Cameras">
+        <img class="gallery-img" src="35188.jpg" alt="LuminX I Pro Display">
+        <img class="gallery-img" src="35189.jpg" alt="LuminX I Pro Hardware">
+        <img class="gallery-img" src="35190.jpg" alt="LuminX I Pro Cooling">
+        <img class="gallery-img" src="35191.jpg" alt="LuminX I Pro Battery">
+        
+        <div class="gallery-nav">
+          <button class="g-btn" onclick="switchGallery('gal-2', -1)">‹</button>
+          <button class="g-btn" onclick="switchGallery('gal-2', 1)">›</button>
+        </div>
+      </div>
+
+      <h3>LuminX I Pro</h3>
+      <p>Snapdragon 8 Elite, тройная камера с 200 МП основным датчиком и 3x телевиком, 3D система охлаждения и АКБ 6500 мАч (90W / 50W).</p>
+      <a href="https://t.me/LuminXcompany" target="_blank" class="btn">Подробнее в канале</a>
+    </div>
+
+    <div class="slide">
+      <span class="slide-badge">Software / APK</span>
+      <div class="gallery-wrapper">
+        <img class="gallery-img active" src="https://via.placeholder.com/400x280/1a1d26/a855f7?text=LuminOS+App+APK" alt="Приложение">
+      </div>
+      <h3>Фирменный софт LuminX (APK)</h3>
+      <p>Свежая сборка нашего приложения. Кастомные модули, плавная анимация и эксклюзивные функции.</p>
+      <a href="app.apk" download class="btn">Скачать APK</a>
+    </div>
+
+    <div class="slide">
+      <span class="slide-badge">UI/UX Design</span>
+      <div class="gallery-wrapper">
+        <img class="gallery-img active" src="https://via.placeholder.com/400x280/1a1d26/a855f7?text=LuminUI+Interface" alt="Интерфейс">
+      </div>
+      <h3>Концепт оболочки LuminUI</h3>
+      <p>Минималистичные виджеты, кастомизация шторки и плавный пользовательский опыт.</p>
+      <a href="https://t.me/LuminXcompany" target="_blank" class="btn">Подробнее</a>
+    </div>
+
+    <div class="controls">
+      <button class="nav-btn" onclick="changeSlide(-1)">←</button>
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">→</button>
+    </div>
+
+  </div>
+
+  <div class="info-card">
+    <h4>Официальные ресурсы</h4>
+    <a href="https://t.me/LuminXcompany" target="_blank" class="link-btn">
+      📱 Telegram Channel
+    </a>
+    <div class="copy-row">
+      <div>TikTok: <span>@luminx_company</span></div>
+      <button class="copy-btn" onclick="copyTikTok()">📋 Копировать</button>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <h4>Поддержать проект / Реквизиты</h4>
+    <div class="req-item">Карта: <span>0000 0000 0000 0000</span></div>
+    <div class="req-item">Crypto (USDT TRC20): <span>TYourWalletAddress...</span></div>
+  </div>
+
+  <footer>
+    © 2026 LuminX Studio. Все права защищены.
+  </footer>
+
+  <div id="toast" class="toast">Скопировано!</div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.remove('active');
+        if (dots[i]) dots[i].classList.remove('active');
+      });
+
+      if (index >= slides.length) currentSlide = 0;
+      if (index < 0) currentSlide = slides.length - 1;
+
+      slides[currentSlide].classList.add('active');
+      if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+    }
+
+    function changeSlide(direction) {
+      currentSlide += direction;
+      showSlide(currentSlide);
+    }
+
+    function switchGallery(galleryId, dir) {
+      const container = document.getElementById(galleryId);
+      if (!container) return;
+      const images = container.querySelectorAll('.gallery-img');
+      let activeIndex = 0;
+
+      images.forEach((img, i) => {
+        if (img.classList.contains('active')) {
+          activeIndex = i;
+          img.classList.remove('active');
+        }
+      });
+
+      activeIndex += dir;
+      if (activeIndex >= images.length) activeIndex = 0;
+      if (activeIndex < 0) activeIndex = images.length - 1;
+
+      images[activeIndex].classList.add('active');
+    }
+
+    function copyTikTok() {
+      navigator.clipboard.writeText('@luminx_company').then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>
