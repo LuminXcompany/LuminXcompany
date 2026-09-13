@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
+
   <style>
     :root {
       --bg-color: #030406;
@@ -96,6 +96,22 @@
     .sound-toggle-btn.playing {
       background: rgba(var(--accent-rgb), 0.35);
       box-shadow: 0 0 15px var(--accent);
+    }
+
+    .volume-slider-wrapper {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.5);
+      border-radius: 16px;
+      padding: 0 8px;
+      height: 32px;
+    }
+
+    #musicVolumeSlider {
+      width: 65px;
+      accent-color: var(--accent);
+      cursor: pointer;
     }
 
     .slider-container {
@@ -456,14 +472,18 @@
     <div class="theme-btn" style="background: #10b981;" onclick="setTheme('#10b981')"></div>
     <div class="theme-btn" style="background: #f97316;" onclick="setTheme('#f97316')"></div>
     <div class="theme-btn" style="background: #ec4899;" onclick="setTheme('#ec4899')"></div>
-    
+
     <div class="color-picker-btn" onclick="openColorModal()" title="Свой цвет">🎨</div>
     <div class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()" title="Звуки UI ВКЛ/ВЫКЛ">🔊</div>
     <div class="sound-toggle-btn" id="ps4MusicBtn" onclick="togglePS4Music()" title="Эмбиент-музыка ВКЛ/ВЫКЛ">🎧</div>
+    
+    <div class="volume-slider-wrapper" title="Громкость музыки">
+      <input type="range" id="musicVolumeSlider" min="0" max="1" step="0.05" value="0.7">
+    </div>
   </div>
 
   <div class="slider-container" id="sliderContainer">
-    
+
     <div class="slides-wrapper">
       <div class="slide active">
         <span class="slide-badge">Flagship Concept</span>
@@ -550,7 +570,7 @@
         osc.type = 'sine';
         osc.frequency.setValueAtTime(550, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.04);
-        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -567,7 +587,17 @@
 
     let ps4MusicPlaying = false;
     let ps4AudioCtx = null;
+    let ps4GainNode = null;
     let ps4Interval = null;
+
+    const volumeSlider = document.getElementById('musicVolumeSlider');
+
+    volumeSlider.addEventListener('input', (e) => {
+      const vol = parseFloat(e.target.value);
+      if (ps4GainNode && ps4AudioCtx) {
+        ps4GainNode.gain.setValueAtTime(vol * 0.25, ps4AudioCtx.currentTime);
+      }
+    });
 
     function togglePS4Music() {
       const btn = document.getElementById('ps4MusicBtn');
@@ -588,6 +618,12 @@
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         ps4AudioCtx = new AudioCtx();
+        ps4GainNode = ps4AudioCtx.createGain();
+        
+        const currentVol = parseFloat(volumeSlider.value);
+        ps4GainNode.gain.setValueAtTime(currentVol * 0.25, ps4AudioCtx.currentTime);
+        ps4GainNode.connect(ps4AudioCtx.destination);
+
         const chordPads = [
           [261.63, 329.63, 392.00, 493.88],
           [220.00, 261.63, 329.63, 392.00],
@@ -605,10 +641,11 @@
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, ps4AudioCtx.currentTime);
             gain.gain.setValueAtTime(0.0001, ps4AudioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, ps4AudioCtx.currentTime + 2.5);
+            gain.gain.linearRampToValueAtTime(0.18, ps4AudioCtx.currentTime + 2.5);
             gain.gain.exponentialRampToValueAtTime(0.0001, ps4AudioCtx.currentTime + 6.0);
+            
             osc.connect(gain);
-            gain.connect(ps4AudioCtx.destination);
+            gain.connect(ps4GainNode);
             osc.start(ps4AudioCtx.currentTime);
             osc.stop(ps4AudioCtx.currentTime + 6.0);
           });
@@ -620,11 +657,22 @@
 
     function stopPS4Ambient() {
       if (ps4Interval) clearInterval(ps4Interval);
+      ps4Interval = null;
       if (ps4AudioCtx) {
         ps4AudioCtx.close().catch(() => {});
         ps4AudioCtx = null;
+        ps4GainNode = null;
       }
     }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && ps4MusicPlaying) {
+        stopPS4Ambient();
+        ps4MusicPlaying = false;
+        const btn = document.getElementById('ps4MusicBtn');
+        if (btn) btn.classList.remove('playing');
+      }
+    });
 
     let currentSlide = 0;
     const slides = document.querySelectorAll('.slide');
@@ -661,7 +709,7 @@
 
     function resetProgressBar() {
       if (progressInterval) clearInterval(progressInterval);
-      
+
       slides.forEach(s => {
         const bar = s.querySelector('.autoplay-progress-bar');
         if (bar) bar.style.width = '0%';
@@ -802,7 +850,7 @@
     }
 
     const sliderEl = document.getElementById('sliderContainer');
-    
+
     sliderEl.addEventListener('mouseenter', stopAutoplay);
     sliderEl.addEventListener('mouseleave', startAutoplay);
     sliderEl.addEventListener('touchstart', stopAutoplay, { passive: true });
