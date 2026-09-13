@@ -739,6 +739,7 @@
       const rgb = hexToRgb(hex);
       document.documentElement.style.setProperty('--accent', hex);
       document.documentElement.style.setProperty('--accent-rgb', rgb);
+      document.documentElement.style.setProperty('--card-border', `rgba(${rgb}, 0.35)`);
       if (save) localStorage.setItem('luminx_accent', hex);
     }
 
@@ -748,6 +749,7 @@
         const rgb = hexToRgb(savedColor);
         document.documentElement.style.setProperty('--accent', savedColor);
         document.documentElement.style.setProperty('--accent-rgb', rgb);
+        document.documentElement.style.setProperty('--card-border', `rgba(${rgb}, 0.35)`);
       }
       showSlide(0);
       startAutoplay();
