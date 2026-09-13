@@ -2,11 +2,12 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LuminX — Новейшие Разработки</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -63,6 +64,14 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 4px;
+      cursor: pointer;
+      display: inline-block;
+      user-select: none;
+      transition: transform 0.1s ease;
+    }
+
+    header h1:active {
+      transform: scale(0.95);
     }
 
     header p {
@@ -518,12 +527,126 @@
       color: var(--text-muted);
       text-align: center;
     }
+
+    /* --- Стили для игры (LuminX Dino Dash) --- */
+    #gameOverlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(3, 4, 6, 0.92);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 20000;
+      padding: 15px;
+    }
+
+    #gameOverlay.active {
+      display: flex;
+    }
+
+    .arcade-cabinet {
+      border: 3px solid #a855f7;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(0,0,0,0.8);
+      background: #111422;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      width: 98vw;
+      max-width: 748px;
+      font-family: 'Press Start 2P', monospace;
+      color: #fff;
+      position: relative;
+    }
+
+    body.light .arcade-cabinet {
+      background: #ffffff;
+      border-color: #9333ea;
+      color: #0f172a;
+      box-shadow: 0 0 20px rgba(147, 51, 234, 0.2), inset 0 0 5px rgba(0,0,0,0.05);
+    }
+
+    .close-game-btn {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      background: #f43f5e;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-family: monospace;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      z-index: 10;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 8px;
+      color: #c084fc;
+      text-shadow: 2px 2px #000;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    body.light .hud {
+      color: #7e22ce;
+      text-shadow: none;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 720 / 320;
+      background: #1a1532;
+      border: 2px solid #4c1d95;
+      image-rendering: pixelated;
+    }
+
+    body.light canvas {
+      background: #e2e8f0;
+      border-color: #a855f7;
+    }
+
+    .instructions {
+      margin-top: 8px;
+      font-size: 8px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    body.light .instructions {
+      color: #475569;
+    }
+
+    .key {
+      color: #a855f7;
+      background: #1e1b4b;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid #a855f7;
+    }
+
+    body.light .key {
+      color: #7e22ce;
+      background: #f3e8ff;
+      border-color: #c084fc;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>LuminX</h1>
+    <h1 id="luminxTitle">LuminX</h1>
     <p id="headerSubtitle">Самые свежие выходы наших разработок</p>
   </header>
 
@@ -537,7 +660,7 @@
     <div class="color-picker-btn" onclick="openColorModal()" title="Свой цвет">🎨</div>
     <div class="sound-toggle-btn" id="soundBtn" onclick="toggleSound()" title="Звуки UI ВКЛ/ВЫКЛ">🔊</div>
     <div class="sound-toggle-btn" id="ps4MusicBtn" onclick="togglePS4Music()" title="Эмбиент-музыка ВКЛ/ВЫКЛ">🎧</div>
-    
+
     <div class="volume-slider-wrapper" title="Громкость музыки">
       <input type="range" id="musicVolumeSlider" min="0" max="1" step="0.05" value="0.7">
     </div>
@@ -628,7 +751,7 @@
     </div>
   </div>
 
-  <!-- Модалка «Предложить идею» (напрямую владельцу) -->
+  <!-- Модалка «Предложить идею» -->
   <div class="modal-overlay" id="feedbackModal">
     <div class="custom-modal">
       <h4 data-i18n="fbModalTitle">Предложить идею / отклик</h4>
@@ -641,6 +764,26 @@
           <button type="submit" class="modal-btn apply" data-i18n="fbSubmitBtn">Отправить</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Оверлей с игрой LuminX Dino Dash -->
+  <div id="gameOverlay">
+    <div class="arcade-cabinet">
+      <button class="close-game-btn" onclick="closeGameModal()">✕</button>
+      <div class="hud">
+        <div>LX COINS: <span id="coinCount">0</span></div>
+        <div>SCORE: <span id="scoreCount">0</span></div>
+        <div>SPEED: <span id="speedVal">2.0</span>x</div>
+        <div>RAINBOW: <span id="rainbowTimer">OFF</span></div>
+        <div>HI: <span id="highScore">0</span></div>
+      </div>
+
+      <canvas id="gameCanvas" width="720" height="320"></canvas>
+
+      <div class="instructions">
+        Прыжок: нажми <span class="key">ПРОБЕЛ</span>, <span class="key">СТРЕЛКУ ВВЕРХ</span> или тапни в любое место экрана
+      </div>
     </div>
   </div>
 
@@ -679,7 +822,8 @@
         toastAmbientOff: "Релакс-эмбиент: ВЫКЛ",
         toastTikTok: "TikTok скопирован!",
         toastShare: "Ссылка скопирована!",
-        toastFeedbackSent: "Спасибо! Сообщение отправлено."
+        toastFeedbackSent: "Спасибо! Сообщение отправлено.",
+        toastGameUnlocked: "🎮 LuminX Dino Dash разблокирована!"
       },
       en: {
         headerSubtitle: "Latest releases of our developments",
@@ -713,7 +857,8 @@
         toastAmbientOff: "Relax Ambient: OFF",
         toastTikTok: "TikTok copied!",
         toastShare: "Link copied!",
-        toastFeedbackSent: "Thanks! Message sent."
+        toastFeedbackSent: "Thanks! Message sent.",
+        toastGameUnlocked: "🎮 LuminX Dino Dash unlocked!"
       }
     };
 
@@ -822,7 +967,7 @@
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         ps4AudioCtx = new AudioCtx();
         ps4GainNode = ps4AudioCtx.createGain();
-        
+
         const currentVol = parseFloat(volumeSlider.value);
         ps4GainNode.gain.setValueAtTime(currentVol * 0.25, ps4AudioCtx.currentTime);
         ps4GainNode.connect(ps4AudioCtx.destination);
@@ -846,7 +991,7 @@
             gain.gain.setValueAtTime(0.0001, ps4AudioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0.18, ps4AudioCtx.currentTime + 2.5);
             gain.gain.exponentialRampToValueAtTime(0.0001, ps4AudioCtx.currentTime + 6.0);
-            
+
             osc.connect(gain);
             gain.connect(ps4GainNode);
             osc.start(ps4AudioCtx.currentTime);
@@ -1111,7 +1256,544 @@
       }
       startAutoplay();
     }, { passive: true });
-  </script>
 
+    // --- Скрипт игры и пасхалка (5 кликов по LuminX) ---
+    const luminxTitle = document.getElementById('luminxTitle');
+    const gameOverlay = document.getElementById('gameOverlay');
+    let titleClicksCount = 0;
+    let titleClickTimer = null;
+
+    luminxTitle.addEventListener('click', () => {
+      playClickSound();
+      titleClicksCount++;
+      clearTimeout(titleClickTimer);
+      titleClickTimer = setTimeout(() => {
+        titleClicksCount = 0;
+      }, 1500);
+
+      if (titleClicksCount >= 5) {
+        titleClicksCount = 0;
+        showToastMsg(translations[currentLang].toastGameUnlocked);
+        openGameModal();
+      }
+    });
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const coinCountEl = document.getElementById('coinCount');
+    const scoreCountEl = document.getElementById('scoreCount');
+    const speedValEl = document.getElementById('speedVal');
+    const rainbowTimerEl = document.getElementById('rainbowTimer');
+    const highScoreEl = document.getElementById('highScore');
+
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtx();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type, duration) {
+      try {
+        const ctxAudio = getAudioCtx();
+        if (ctxAudio.state === 'suspended') ctxAudio.resume();
+        const osc = ctxAudio.createOscillator();
+        const gain = ctxAudio.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctxAudio.currentTime);
+        gain.gain.setValueAtTime(0.08, ctxAudio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctxAudio.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctxAudio.destination);
+        osc.start();
+        osc.stop(ctxAudio.currentTime + duration);
+      } catch (e) {}
+    }
+
+    const soundJump = () => playTone(350, 'square', 0.12);
+    const soundCoin = () => {
+      playTone(987.77, 'square', 0.08);
+      setTimeout(() => playTone(1318.51, 'square', 0.15), 80);
+    };
+    const soundRainbow = () => {
+      playTone(523.25, 'triangle', 0.1);
+      setTimeout(() => playTone(659.25, 'triangle', 0.1), 100);
+      setTimeout(() => playTone(783.99, 'triangle', 0.15), 200);
+      setTimeout(() => playTone(1046.50, 'triangle', 0.25), 300);
+    };
+    const soundSmash = () => {
+      playTone(180, 'sawtooth', 0.15);
+      setTimeout(() => playTone(90, 'sawtooth', 0.2), 80);
+    };
+    const soundHit = () => {
+      playTone(130, 'sawtooth', 0.3);
+      setTimeout(() => playTone(80, 'sawtooth', 0.3), 150);
+    };
+
+    let gameState = 'START';
+    let score = 0;
+    let coins = 0;
+    let gameSpeed = 2.0;
+    let nextSpeedMilestone = 100;
+    let rainbowTimeLeft = 0;
+    let rainbowMaxTime = 900;
+    let nextRainbowScore = 1000;
+    let initialRainbowSpawned = false;
+
+    let highScore = localStorage.getItem('luminx_hi') || 0;
+    highScoreEl.textContent = highScore;
+
+    const groundY = 270;
+    let cameraX = 0;
+    let gameAnimationId = null;
+
+    const player = {
+      x: 70,
+      y: groundY - 48,
+      w: 42,
+      h: 48,
+      vy: 0,
+      gravity: 0.55,
+      jumpForce: -13.5,
+      grounded: true,
+      animFrame: 0,
+      jump() {
+        if (this.grounded) {
+          this.vy = this.jumpForce;
+          this.grounded = false;
+          soundJump();
+        }
+      },
+      update() {
+        this.vy += this.gravity;
+        this.y += this.vy;
+
+        const mult = rainbowTimeLeft > 0 ? 2.0 : 1.0;
+        const baseRunSpeed = (3.5 + (gameSpeed - 2.0) * 0.7) * mult;
+        this.x += baseRunSpeed;
+
+        if (this.y >= groundY - this.h) {
+          this.y = groundY - this.h;
+          this.vy = 0;
+          this.grounded = true;
+        }
+        this.animFrame++;
+      },
+      draw() {
+        const px = this.x - cameraX;
+        const py = this.y;
+        const step = Math.floor(this.animFrame / 6) % 2;
+        const isRainbowActive = rainbowTimeLeft > 0;
+        const hue = (Date.now() / 8) % 360;
+
+        ctx.fillStyle = isRainbowActive ? `hsl(${hue}, 100%, 65% )` : '#00ffcc';
+        ctx.fillRect(px + 20, py + 4, 20, 16);
+        ctx.fillStyle = '#ff0055';
+        ctx.fillRect(px + 30, py + 8, 6, 6);
+
+        ctx.fillStyle = isRainbowActive ? `hsl(${(hue + 120) % 360}, 100%, 55%)` : '#a855f7';
+        ctx.fillRect(px + 12, py + 18, 20, 20);
+
+        ctx.fillStyle = isRainbowActive ? `hsl(${(hue + 240) % 360}, 100%, 55%)` : '#a855f7';
+        ctx.fillRect(px, py + 22, 14, 8);
+        ctx.fillRect(px - 4, py + 24, 6, 6);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + 14, py + 12, 6, 6);
+        ctx.fillRect(px + 22, py + 14, 6, 4);
+
+        ctx.fillStyle = isRainbowActive ? `hsl(${hue}, 100%, 65%)` : '#00ffcc';
+        if (this.grounded) {
+          if (step === 0) {
+            ctx.fillRect(px + 14, py + 38, 7, 10);
+            ctx.fillRect(px + 24, py + 34, 7, 14);
+          } else {
+            ctx.fillRect(px + 14, py + 34, 7, 14);
+            ctx.fillRect(px + 24, py + 38, 7, 10);
+          }
+        } else {
+          ctx.fillRect(px + 14, py + 34, 7, 8);
+          ctx.fillRect(px + 24, py + 32, 7, 8);
+        }
+      }
+    };
+
+    let obstacles = [];
+    let lkCoins = [];
+    let rainbowItems = [];
+    let lastSpawnX = 0;
+
+    function resetGame() {
+      score = 0;
+      coins = 0;
+      gameSpeed = 2.0;
+      nextSpeedMilestone = 100;
+      rainbowTimeLeft = 0;
+      nextRainbowScore = 1000;
+      initialRainbowSpawned = false;
+      obstacles = [];
+      lkCoins = [];
+      rainbowItems = [];
+      cameraX = 0;
+      lastSpawnX = 350;
+      player.x = 70;
+      player.y = groundY - player.h;
+      player.vy = 0;
+      player.grounded = true;
+      coinCountEl.textContent = coins;
+      scoreCountEl.textContent = score;
+      speedValEl.textContent = gameSpeed.toFixed(1);
+      rainbowTimerEl.textContent = 'OFF';
+    }
+
+    function spawnEntity() {
+      const currentScore = Math.floor(score / 5);
+      const spawnX = cameraX + canvas.width + 60;
+
+      if (!initialRainbowSpawned) {
+        rainbowItems.push({
+          x: player.x + 320,
+          y: groundY - 80,
+          w: 24,
+          h: 24,
+          collected: false
+        });
+        initialRainbowSpawned = true;
+        lastSpawnX = spawnX;
+        return;
+      }
+
+      if (currentScore >= nextRainbowScore) {
+        rainbowItems.push({
+          x: spawnX,
+          y: groundY - 85,
+          w: 24,
+          h: 24,
+          collected: false
+        });
+        nextRainbowScore += 1000;
+        lastSpawnX = spawnX;
+        return;
+      }
+
+      if (spawnX - lastSpawnX < 210) return;
+
+      const rand = Math.random();
+
+      if (rand < 0.35) {
+        const coinCount = 3;
+        const startY = groundY - 70 - Math.random() * 30;
+        for (let i = 0; i < coinCount; i++) {
+          lkCoins.push({
+            x: spawnX + i * 26,
+            y: startY,
+            w: 22,
+            h: 22,
+            collected: false
+          });
+        }
+        lastSpawnX = spawnX + coinCount * 26;
+      } else if (currentScore > 120 && rand > 0.72) {
+        const birdHeights = [groundY - 95, groundY - 120];
+        const bHeight = birdHeights[Math.floor(Math.random() * birdHeights.length)];
+        obstacles.push({
+          x: spawnX,
+          y: bHeight,
+          w: 30,
+          h: 22,
+          type: 'bird',
+          anim: 0
+        });
+        lastSpawnX = spawnX;
+      } else {
+        const height = Math.random() > 0.5 ? 28 : 42;
+        obstacles.push({
+          x: spawnX,
+          y: groundY - height,
+          w: 24,
+          h: height,
+          type: 'block'
+        });
+        lastSpawnX = spawnX;
+      }
+    }
+
+    function update() {
+      if (gameState !== 'PLAYING') return;
+
+      player.update();
+
+      if (rainbowTimeLeft > 0) {
+        rainbowTimeLeft--;
+        const secondsLeft = (rainbowTimeLeft / 60).toFixed(1);
+        rainbowTimerEl.textContent = secondsLeft + 's';
+        if (rainbowTimeLeft === 0) {
+          rainbowTimerEl.textContent = 'OFF';
+        }
+      }
+
+      cameraX = player.x - 120;
+      if (cameraX < 0) cameraX = 0;
+
+      score++;
+      const currentScore = Math.floor(score / 5);
+      scoreCountEl.textContent = currentScore;
+
+      const themeToggle = Math.floor(currentScore / 1000) % 2 === 1;
+      const cabinetEl = document.querySelector('.arcade-cabinet');
+      if (themeToggle) {
+        cabinetEl.classList.add('light-theme');
+      } else {
+        cabinetEl.classList.remove('light-theme');
+      }
+
+      if (currentScore >= nextSpeedMilestone) {
+        gameSpeed += 0.5;
+        nextSpeedMilestone += 100;
+        speedValEl.textContent = gameSpeed.toFixed(1);
+      }
+
+      spawnEntity();
+
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obs = obstacles[i];
+        if (obs.type === 'bird') obs.anim++;
+
+        if (
+          player.x < obs.x + obs.w &&
+          player.x + player.w > obs.x &&
+          player.y < obs.y + obs.h &&
+          player.y + player.h > obs.y
+        ) {
+          if (rainbowTimeLeft > 0) {
+            soundSmash();
+            obstacles.splice(i, 1);
+            continue;
+          } else {
+            soundHit();
+            gameOver();
+            return;
+          }
+        }
+
+        if (obs.x + obs.w < cameraX - 50) {
+          obstacles.splice(i, 1);
+        }
+      }
+
+      for (let i = lkCoins.length - 1; i >= 0; i--) {
+        const c = lkCoins[i];
+
+        if (rainbowTimeLeft > 0) {
+          const dx = player.x - c.x;
+          const dy = player.y - c.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 220) {
+            c.x += (dx / dist) * 6;
+            c.y += (dy / dist) * 6;
+          }
+        }
+
+        if (
+          !c.collected &&
+          player.x < c.x + c.w &&
+          player.x + player.w > c.x &&
+          player.y < c.y + c.h &&
+          player.y + player.h > c.y
+        ) {
+          c.collected = true;
+          coins += rainbowTimeLeft > 0 ? 2 : 1;
+          coinCountEl.textContent = coins;
+          soundCoin();
+        }
+
+        if (c.x + c.w < cameraX - 50 || c.collected) {
+          lkCoins.splice(i, 1);
+        }
+      }
+
+      for (let i = rainbowItems.length - 1; i >= 0; i--) {
+        const r = rainbowItems[i];
+
+        if (
+          !r.collected &&
+          player.x < r.x + r.w &&
+          player.x + player.w > r.x &&
+          player.y < r.y + r.h &&
+          player.y + player.h > r.y
+        ) {
+          r.collected = true;
+          rainbowTimeLeft = rainbowMaxTime;
+          soundRainbow();
+        }
+
+        if (r.x + r.w < cameraX - 50 || r.collected) {
+          rainbowItems.splice(i, 1);
+        }
+      }
+    }
+
+    function gameOver() {
+      gameState = 'GAMEOVER';
+      const finalScore = Math.floor(score / 5);
+      if (finalScore > highScore) {
+        highScore = finalScore;
+        localStorage.setItem('luminx_hi', highScore);
+        highScoreEl.textContent = highScore;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cabinetEl = document.querySelector('.arcade-cabinet');
+      const isLight = cabinetEl.classList.contains('light-theme');
+
+      ctx.strokeStyle = isLight ? '#cbd5e1' : '#1e1b4b';
+      ctx.lineWidth = 1;
+      const offsetX = -(cameraX % 32);
+      for (let x = offsetX; x < canvas.width; x += 32) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = isLight ? '#cbd5e1' : '#311042';
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+      ctx.fillStyle = isLight ? '#9333ea' : '#a855f7';
+      ctx.fillRect(0, groundY, canvas.width, 3);
+
+      if (rainbowTimeLeft > 0) {
+        const barW = 200;
+        const barH = 6;
+        const barX = (canvas.width - barW) / 2;
+        const barY = 16;
+        const ratio = rainbowTimeLeft / rainbowMaxTime;
+        const hue = (Date.now() / 4) % 360;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
+        ctx.fillStyle = `hsl(${hue}, 100%, 55%)`;
+        ctx.fillRect(barX, barY, barW * ratio, barH);
+      }
+
+      obstacles.forEach(obs => {
+        const screenX = obs.x - cameraX;
+        if (obs.type === 'bird') {
+          const wingUp = Math.floor(obs.anim / 8) % 2 === 0;
+          ctx.fillStyle = isLight ? '#e11d48' : '#fb7185';
+          ctx.fillRect(screenX, obs.y + 8, obs.w, 6);
+          if (wingUp) {
+            ctx.fillRect(screenX + 8, obs.y, 8, 8);
+          } else {
+            ctx.fillRect(screenX + 8, obs.y + 14, 8, 8);
+          }
+        } else {
+          ctx.fillStyle = isLight ? '#e11d48' : '#f43f5e';
+          ctx.fillRect(screenX, obs.y, obs.w, obs.h);
+          ctx.fillStyle = '#fda4af';
+          ctx.fillRect(screenX + 4, obs.y + 4, 4, obs.h - 8);
+        }
+      });
+
+      lkCoins.forEach(c => {
+        const screenX = c.x - cameraX;
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(screenX, c.y, c.h, c.h);
+        ctx.fillStyle = '#78350f';
+        ctx.font = 'bold 8px "Press Start 2P"';
+        ctx.fillText('LX', screenX + 4, c.y + 14);
+      });
+
+      rainbowItems.forEach(r => {
+        const screenX = r.x - cameraX;
+        const hue = (Date.now() / 4) % 360;
+        ctx.fillStyle = `hsl(${hue}, 100%, 55%)`;
+        ctx.fillRect(screenX, r.y, r.w, r.h);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px "Press Start 2P"';
+        ctx.fillText('★', screenX + 6, r.y + 16);
+      });
+
+      player.draw();
+
+      if (gameState === 'START') {
+        ctx.fillStyle = isLight ? 'rgba(255, 255, 255, 0.88)' : 'rgba(7, 9, 15, 0.85)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = isLight ? '#7e22ce' : '#a855f7';
+        ctx.font = '14px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('LUMINX DINO', canvas.width / 2, 115);
+        ctx.fillStyle = isLight ? '#0f172a' : '#fff';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('ТАПНИ В ЛЮБОМ МЕСТЕ ИЛИ ПРОБЕЛ', canvas.width / 2, 175);
+      } else if (gameState === 'GAMEOVER') {
+        ctx.fillStyle = isLight ? 'rgba(255, 255, 255, 0.9)' : 'rgba(7, 9, 15, 0.88)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = '14px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', canvas.width / 2, 110);
+        ctx.fillStyle = isLight ? '#0f172a' : '#fff';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.fillText('МОНЕТ LX: ' + coins, canvas.width / 2, 145);
+        ctx.fillText('РЕЗУЛЬТАТ: ' + Math.floor(score / 5), canvas.width / 2, 170);
+        ctx.fillStyle = isLight ? '#7e22ce' : '#a855f7';
+        ctx.fillText('ТАПНИ ДЛЯ РЕСТАРТА', canvas.width / 2, 215);
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      gameAnimationId = requestAnimationFrame(loop);
+    }
+
+    function triggerAction(e) {
+      if (gameOverlay.classList.contains('active')) {
+        if (e) e.preventDefault();
+        const ctxAudio = getAudioCtx();
+        if (ctxAudio.state === 'suspended') ctxAudio.resume();
+        if (gameState === 'START' || gameState === 'GAMEOVER') {
+          resetGame();
+          gameState = 'PLAYING';
+        } else if (gameState === 'PLAYING') {
+          player.jump();
+        }
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.code === 'Space' || e.code === 'ArrowUp') && gameOverlay.classList.contains('active')) {
+        e.preventDefault();
+        triggerAction(e);
+      }
+    });
+
+    canvas.addEventListener('click', triggerAction);
+    canvas.addEventListener('touchstart', triggerAction, { passive: false });
+
+    function openGameModal() {
+      resetGame();
+      gameState = 'START';
+      gameOverlay.classList.add('active');
+      if (!gameAnimationId) {
+        loop();
+      }
+    }
+
+    function closeGameModal() {
+      playClickSound();
+      gameOverlay.classList.remove('active');
+      if (gameAnimationId) {
+        cancelAnimationFrame(gameAnimationId);
+        gameAnimationId = null;
+      }
+    }
+  </script>
 </body>
 </html>
